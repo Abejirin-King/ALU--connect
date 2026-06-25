@@ -1,3 +1,4 @@
+import 'package:alu_connect/features/settings/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -51,7 +52,6 @@ class ProfileScreen extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.bookmark),
                 title: const Text("Saved Opportunities"),
-                trailing: const Text("8"),
               ),
             ),
 
@@ -59,12 +59,22 @@ class ProfileScreen extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.assignment),
                 title: const Text("Applications"),
-                trailing: const Text("12"),
               ),
             ),
 
-            const SizedBox(height: 20),
-
+          Card(
+              child: ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text("Settings"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+              ),
+            ),  
+           
             ElevatedButton.icon(
               onPressed: () {},
               icon: const Icon(Icons.logout),
