@@ -1,12 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../profile/screens/edit_profile_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(currentUserProvider);
+    final user = userAsync.value;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Settings"),
@@ -17,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Profile Header
+          
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -32,14 +39,14 @@ class SettingsScreen extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          "Amina Hassan",
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          user?.displayName ?? "Student",
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          "aminahassan@alu.edu",
-                          style: TextStyle(color: Colors.grey),
+                          user?.email ?? "",
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -47,7 +54,10 @@ class SettingsScreen extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () {
-                      // TODO: Navigate to Edit Profile
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                      );
                     },
                   ),
                 ],
@@ -57,7 +67,7 @@ class SettingsScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // General Settings
+          
           _buildSectionHeader("General"),
           Card(
             child: Column(
@@ -66,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
                   icon: Icons.notifications_outlined,
                   title: "Notifications",
                   subtitle: "Manage push notifications",
-                  trailing: Switch(value: true, onChanged: (val) {}),
+                  trailing: const Switch(value: true, onChanged: null),
                 ),
                 const Divider(height: 1),
                 _buildSettingsTile(
@@ -88,7 +98,7 @@ class SettingsScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Support
+          
           _buildSectionHeader("Support & About"),
           Card(
             child: Column(
@@ -112,17 +122,19 @@ class SettingsScreen extends StatelessWidget {
 
           const SizedBox(height: 32),
 
-          // Logout
+          
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Add logout logic (clear providers, go to login)
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()), // Import needed
-                  (route) => false,
-                );
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
               },
               icon: const Icon(Icons.logout),
               label: const Text("Logout"),

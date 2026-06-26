@@ -9,7 +9,7 @@ class ApplicationNotifier extends StateNotifier<List<ApplicationModel>> {
   ApplicationNotifier() : super([]);
 
   void apply(String opportunityId) {
-    // Prevent duplicate applications
+    
     if (state.any((app) => app.opportunityId == opportunityId)) {
       return;
     }
@@ -25,7 +25,7 @@ class ApplicationNotifier extends StateNotifier<List<ApplicationModel>> {
     ];
   }
 
-  // Optional: Add status update method later
+  
   void updateStatus(String applicationId, String newStatus) {
     state = state.map((app) {
       if (app.id == applicationId) {

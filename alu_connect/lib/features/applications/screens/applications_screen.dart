@@ -14,7 +14,7 @@ class ApplicationsScreen extends ConsumerWidget {
     final applications = ref.watch(applicationProvider);
     final allOpportunities = ref.watch(opportunityProvider);
 
-    // Map opportunityId to Opportunity for display
+    
     Opportunity? getOpportunity(String id) {
       return allOpportunities.firstWhere((opp) => opp.id == id, orElse: () => allOpportunities.first);
     }
@@ -128,7 +128,7 @@ class ApplicationsScreen extends ConsumerWidget {
             ),
             trailing: _buildStatusBadge(app.status),
             onTap: () {
-              // TODO: Navigate to opportunity detail if needed
+              
             },
           ),
         );

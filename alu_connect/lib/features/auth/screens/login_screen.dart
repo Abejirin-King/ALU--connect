@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -15,7 +16,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _isLoading = false;
+  String? _errorMessage;
+  bool _obscurePassword = true; 
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -39,48 +43,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     "ALU Connect",
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
-                  const Text(
-                    "Find meaningful ways to contribute.",
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
+                  const Text("Find meaningful ways to contribute.", style: TextStyle(color: Colors.white70)),
                   const SizedBox(height: 48),
 
                   Card(
                     elevation: 8,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: const EdgeInsets.all(24),
                       child: Form(
                         key: _formKey,
                         child: Column(
                           children: [
+                            if (_errorMessage != null)
+                              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                            const SizedBox(height: 8),
+
                             TextFormField(
                               controller: _emailController,
                               decoration: const InputDecoration(
                                 labelText: "Email",
                                 prefixIcon: Icon(Icons.email),
-                                border: OutlineInputBorder(),
                               ),
                               keyboardType: TextInputType.emailAddress,
-                              validator: (value) => value?.contains('@') == true ? null : "Enter valid email",
+                              validator: (value) => value?.contains('@') ?? false ? null : "Enter valid email",
                             ),
                             const SizedBox(height: 16),
+
+                            
                             TextFormField(
                               controller: _passwordController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: "Password",
-                                prefixIcon: Icon(Icons.lock),
-                                border: OutlineInputBorder(),
+                                prefixIcon: const Icon(Icons.lock),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
                               ),
-                              obscureText: true,
+                              obscureText: _obscurePassword,
                               validator: (value) => value!.length < 6 ? "Password too short" : null,
                             ),
+
                             const SizedBox(height: 24),
 
                             SizedBox(
@@ -90,7 +103,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.royalBlue,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
                                 child: _isLoading
                                     ? const CircularProgressIndicator(color: Colors.white)
@@ -98,7 +110,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
 
-                            const SizedBox(height: 16),
                             TextButton(
                               onPressed: () => Navigator.push(
                                 context,
@@ -123,16 +134,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    // TODO: Add real Firebase Auth here later
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network
-
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = e.message);
+    } catch (e) {
+      setState(() => _errorMessage = "Login failed. Please try again.");
     }
 
     setState(() => _isLoading = false);

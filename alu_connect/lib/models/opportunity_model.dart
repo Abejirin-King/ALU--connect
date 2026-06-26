@@ -1,4 +1,4 @@
-class Opportunity {
+class Opportunity{
   final String id;
   final String startupId;
   final String startup;
