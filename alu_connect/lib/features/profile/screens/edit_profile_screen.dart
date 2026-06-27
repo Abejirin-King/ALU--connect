@@ -43,7 +43,7 @@ Future<void> _saveProfile() async {
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
-    // Force refresh
+    
     await FirebaseAuth.instance.currentUser?.reload();
 
     if (mounted) {
