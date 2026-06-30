@@ -4,7 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../models/application_model.dart';
 import '../../applications/providers/application_provider.dart';
 import '../../opportunities/providers/opportunity_provider.dart';
-import 'package:alu_connect/models/opportunity_model.dart';
+import '../../../models/opportunity_model.dart';
 
 class ApplicationsScreen extends ConsumerWidget {
   const ApplicationsScreen({super.key});
@@ -12,17 +12,7 @@ class ApplicationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final applications = ref.watch(applicationProvider);
-    final allOpportunities = ref.watch(opportunityProvider);
-
-    
-    Opportunity? getOpportunity(String id) {
-      return allOpportunities.firstWhere((opp) => opp.id == id, orElse: () => allOpportunities.first);
-    }
-
-    final applied = applications.where((app) => app.status == "Applied").toList();
-    final underReview = applications.where((app) => app.status == "Review").toList();
-    final accepted = applications.where((app) => app.status == "Accepted").toList();
-    final rejected = applications.where((app) => app.status == "Rejected").toList();
+    final opportunitiesAsync = ref.watch(opportunityProvider);
 
     return DefaultTabController(
       length: 4,
@@ -33,30 +23,48 @@ class ApplicationsScreen extends ConsumerWidget {
           backgroundColor: Colors.white,
           foregroundColor: AppColors.textPrimary,
         ),
-        body: Column(
-          children: [
-            const TabBar(
-              labelColor: AppColors.royalBlue,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: AppColors.red,
-              tabs: [
-                Tab(text: "Applied"),
-                Tab(text: "Review"),
-                Tab(text: "Accepted"),
-                Tab(text: "Rejected"),
+        body: opportunitiesAsync.when(
+          data: (opportunities) {
+            Opportunity? getOpportunity(String id) {
+              return opportunities.firstWhere(
+                (opp) => opp.id == id,
+                orElse: () => opportunities.isNotEmpty ? opportunities.first : Opportunity(id: '', startupId: '', startup: '', title: '', category: '', duration: '', location: '', description: ''),
+              );
+            }
+
+            final applied = applications.where((app) => app.status == "Applied").toList();
+            final underReview = applications.where((app) => app.status == "Review").toList();
+            final accepted = applications.where((app) => app.status == "Accepted").toList();
+            final rejected = applications.where((app) => app.status == "Rejected").toList();
+
+            return Column(
+              children: [
+                const TabBar(
+                  labelColor: AppColors.royalBlue,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: AppColors.red,
+                  tabs: [
+                    Tab(text: "Applied"),
+                    Tab(text: "Review"),
+                    Tab(text: "Accepted"),
+                    Tab(text: "Rejected"),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildApplicationsList(applied, getOpportunity, "Applied"),
+                      _buildApplicationsList(underReview, getOpportunity, "Under Review"),
+                      _buildApplicationsList(accepted, getOpportunity, "Accepted"),
+                      _buildApplicationsList(rejected, getOpportunity, "Rejected"),
+                    ],
+                  ),
+                ),
               ],
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _buildApplicationsList(applied, getOpportunity, "Applied"),
-                  _buildApplicationsList(underReview, getOpportunity, "Under Review"),
-                  _buildApplicationsList(accepted, getOpportunity, "Accepted"),
-                  _buildApplicationsList(rejected, getOpportunity, "Rejected"),
-                ],
-              ),
-            ),
-          ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(child: Text("Error: $error")),
         ),
       ),
     );
@@ -127,9 +135,7 @@ class ApplicationsScreen extends ConsumerWidget {
               ],
             ),
             trailing: _buildStatusBadge(app.status),
-            onTap: () {
-              
-            },
+            onTap: () {},
           ),
         );
       },

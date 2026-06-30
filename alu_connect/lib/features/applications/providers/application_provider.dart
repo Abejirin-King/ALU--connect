@@ -9,10 +9,7 @@ class ApplicationNotifier extends StateNotifier<List<ApplicationModel>> {
   ApplicationNotifier() : super([]);
 
   void apply(String opportunityId) {
-    
-    if (state.any((app) => app.opportunityId == opportunityId)) {
-      return;
-    }
+    if (state.any((app) => app.opportunityId == opportunityId)) return;
 
     state = [
       ...state,
@@ -23,20 +20,5 @@ class ApplicationNotifier extends StateNotifier<List<ApplicationModel>> {
         status: "Applied",
       ),
     ];
-  }
-
-  
-  void updateStatus(String applicationId, String newStatus) {
-    state = state.map((app) {
-      if (app.id == applicationId) {
-        return ApplicationModel(
-          id: app.id,
-          opportunityId: app.opportunityId,
-          studentId: app.studentId,
-          status: newStatus,
-        );
-      }
-      return app;
-    }).toList();
   }
 }

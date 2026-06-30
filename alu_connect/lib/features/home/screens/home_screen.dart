@@ -13,7 +13,6 @@ class HomeScreen extends ConsumerWidget {
     final userAsync = ref.watch(currentUserProvider);
     final opportunities = ref.watch(opportunityProvider);
 
-    
     final displayName = userAsync.value?.displayName?.split(' ').first ?? "Student";
 
     return Scaffold(
@@ -27,7 +26,6 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Column(
@@ -35,10 +33,7 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   Text(
                     "Hello, $displayName 👋",
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -49,7 +44,6 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
 
-            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
@@ -69,7 +63,6 @@ class HomeScreen extends ConsumerWidget {
 
             const SizedBox(height: 28),
 
-            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
@@ -151,7 +144,6 @@ class HomeScreen extends ConsumerWidget {
 
             const SizedBox(height: 32),
 
-            
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -164,7 +156,6 @@ class HomeScreen extends ConsumerWidget {
 
             const SizedBox(height: 32),
 
-            
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -174,10 +165,16 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            ...opportunities.map((opportunity) => Padding(
+           opportunities.when(
+              data: (list) => Column(
+                children: list.map((opportunity) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   child: OpportunityCard(opportunity: opportunity),
-                )),
+                )).toList(),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text("Error: $error")),
+            ),
           ],
         ),
       ),
@@ -218,9 +215,7 @@ class HomeScreen extends ConsumerWidget {
           return Padding(
             padding: const EdgeInsets.only(right: 20),
             child: GestureDetector(
-              onTap: () {
-                
-              },
+              onTap: () {},
               child: Column(
                 children: [
                   Container(

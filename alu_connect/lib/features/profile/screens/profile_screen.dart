@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/providers/user_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../applications/providers/application_provider.dart';
+import '../../opportunities/providers/opportunity_provider.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../help/screens/help_support_screen.dart';
 import '../../auth/screens/login_screen.dart';
@@ -14,16 +15,22 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(currentUserProvider);
-    final user = userAsync.value;
+    final roleAsync = ref.watch(userRoleProvider);
     final applications = ref.watch(applicationProvider);
+    final opportunitiesAsync = ref.watch(opportunityProvider);
+
+    final user = userAsync.value;
+    final isStartup = roleAsync.value == "startup";
 
     final totalApplied = applications.length;
     final shortlisted = applications.where((a) => a.status.toLowerCase().contains("review")).length;
     final accepted = applications.where((a) => a.status.toLowerCase() == "accepted").length;
 
+    final postedOpps = isStartup ? (opportunitiesAsync.value?.length ?? 0) : 0;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: Text(isStartup ? "Startup Profile" : "Profile"),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -44,7 +51,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  user?.displayName ?? "Student",
+                  user?.displayName ?? (isStartup ? "Startup" : "Student"),
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -60,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStat(totalApplied.toString(), "Applications"),
+              _buildStat(isStartup ? postedOpps.toString() : totalApplied.toString(), isStartup ? "Posted" : "Applications"),
               _buildStat(shortlisted.toString(), "Shortlisted"),
               _buildStat(accepted.toString(), "Accepted"),
             ],
